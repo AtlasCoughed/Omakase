@@ -1,52 +1,21 @@
-module.exports = function(app, passport){
-	app.get('/login', function(req, res){
-		res.render('login.ejs', {message: req.flash('loginMessage')});
+var router = require('express').Router();
+var controller = require('../controller/auth.controller.js');
 
-	});
+router.get('/login', controller.auth.getLogin);
 
-	app.get('/signup', function(req, res){
-		res.render('/signup', {message: req.flash('signupMessage') });
-	})
+app.post('/login', controller.auth.postLogin);
 
-	app.post('/signup', passport.authenticate('local-signup', {
-		successRedirect : '/voteSurvey',
-		failureRedirect : '/signup',
-		failureFlash : true
-	}));
+app.get('/signup', controller.auth.getSignUp)
 
-	app.post('/login', passport.authenticate('local-login', {
-		successRedirect : '/voteSurvey',
-		failureRedirect : '/login-to-vote',
-		failureFlash : true
-	}));
+app.post('/signup', controller.auth.postSignUp);
 
+app.get('/vote', controller.auth.isLoggedIn, controller.auth.getVote);
 
-	app.get('/vote', isLoggedIn, function(req, res){
-		res.render('profile.ejs', {
-			user: req.user
-		});
-	});
+app.get('/auth/facebook', controller.auth.getFacebook);
 
-	app.get('/auth/facebook', passport.authenticate('facebook', { scope : 'email' }));
+app.get('/auth/facebook/callback',controller.auth.getFacebookCallback);
 
-    app.get('/auth/facebook/callback',
-        passport.authenticate('facebook', {
-            successRedirect : '/voteSurvey',
-            failureRedirect : '/'
-        }));
+app.get('/logout', controller.auth.getLogout);
 
-
-	app.get('/logout', function(req, res){
-		req.logout();
-		res.redirect('/');
-	});
-};
-
-function isLoggedIn(req, res, next){
-	if(reqisAuthenticated()){
-		return next();
-
-	}
-	res.redirect('/');
-}
+module.exports = router;
 
