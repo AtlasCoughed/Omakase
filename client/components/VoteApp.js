@@ -3,6 +3,8 @@ import { Link } from 'react-router';
 import axios from 'axios';
 import NavBar from './NavBar';
 import VoteSurvey from './VoteSurvey';
+import RestaurantResult from './RestaurantResult';
+import { Button } from 'react-bootstrap';
 
 class VoteApp extends React.Component {
     constructor(props) {
@@ -13,12 +15,15 @@ class VoteApp extends React.Component {
             navMessage: 'Search for Food',
             foodType: null,
             location: null,
-            hasLocationChoice: false,
+            restaurantQuery: null,
+            restaurantResults: null,
             restaurant: null
         };
 
         this.handleFoodChoice = this.handleFoodChoice.bind(this);
         this.handleLocationChoice = this.handleLocationChoice.bind(this);
+        this.handleRestaurantQuery = this.handleRestaurantQuery.bind(this);
+        this.handleGoogleSearch = this.handleGoogleSearch.bind(this);
         this.handleRestaurantChoice = this.handleRestaurantChoice.bind(this);
         this.handleVote = this.handleVote.bind(this);
     }
@@ -30,16 +35,50 @@ class VoteApp extends React.Component {
 
     handleLocationChoice(choice) {
         this.setState({location: choice});
-        this.setState({hasLocationChoice: true});
         this.setState({error: false});
     }
 
-    handleRestaurantChoice(choice) {
-        this.setState({restaurant: choice});
+    handleRestaurantQuery(choice) {
+        this.setState({restaurantQuery: choice});
         this.setState({error: false});
+    }
+
+    handleGoogleSearch() {
+        this.setState({page: 'spinner'});
+        if (this.state.location && this.state.restaurantQuery) {
+            var data = {
+                "location": this.state.location.label,
+                "restaurant": this.state.restaurantQuery
+            }
+
+            axios.post('/api/google/RestaurantSearchBar', data)
+            .then((response) => {
+                this.setState({restaurantResults: response.data.results});
+                this.setState({page: 'confirmRestaurant'});
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+
+        } else {
+            this.setState({error: true});
+        }
+    }
+
+    handleRestaurantChoice(result) {
+        this.setState({restaurant: result});
+    }
+
+    navigateToVoteSurvey() {
+        this.setState({foodType: null});
+        this.setState({location: null});
+        this.setState({restaurantQuery: null});
+        this.setState({page: 'voteSurvey'});
     }
 
     handleVote() {
+        var addressComponents = this.state.restaurant.formatted_address.split(',');
+
         if (this.state.foodType && this.state.location && this.state.restaurant) {
             var data = {
                 "Dish" : {
@@ -50,10 +89,10 @@ class VoteApp extends React.Component {
                     "location_name" : this.state.location.label
                 },
                 "Restaurant": {
-                    "restaurant_name": this.state.restaurant.label,
-                    "address" : "11 DishOneRestaurantAddress",
-                    "zipcode" : 90025,
-                    "imageUrl": "www.dishonerestaurant.com"
+                    "restaurant_name": this.state.restaurant.name,
+                    "address" : addressComponents[0],
+                    "zipcode" : addressComponents[2].slice(-5),
+                    "imageUrl": this.state.foodType.value.image
                }
            }
 
@@ -81,8 +120,8 @@ class VoteApp extends React.Component {
                             <VoteSurvey
                                 handleFoodChoice={this.handleFoodChoice}
                                 handleLocationChoice={this.handleLocationChoice}
-                                hasLocationChoice={this.state.hasLocationChoice}
-                                handleRestaurantChoice={this.handleRestaurantChoice}
+                                handleRestaurantQuery={this.handleRestaurantQuery}
+                                handleGoogleSearch={this.handleGoogleSearch}
                                 handleVote={this.handleVote}
                             />
                         </div>
@@ -90,13 +129,59 @@ class VoteApp extends React.Component {
                 </div>
             );
         }
+        if (this.state.page === 'spinner') {
+            return (
+                <div className="container-fluid">
+                    <NavBar navLink={this.state.navLink} navMessage={this.state.navMessage}/>
+                    <div className="main-container">
+                        <div className="main-content">
+                            <img className="spinner" src="../spinner.gif"/>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        if (this.state.page === 'confirmRestaurant') {
+            if (this.state.restaurantResults.length === 0) {
+                return (
+                    <div className="container-fluid">
+                        <NavBar navLink={this.state.navLink} navMessage={this.state.navMessage}/>
+                        <div className="main-container">
+                            <div className="main-content restaurant-content">
+                                <h1> Sorry, we did not find what you were looking for... </h1>
+                                <Button bsSize="large" className="main-button" onClick={() => {this.navigateToVoteSurvey()}}> Try Again </Button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            } else {
+                return (
+                    <div className="container-fluid">
+                        <NavBar navLink={this.state.navLink} navMessage={this.state.navMessage}/>
+                        <div className="main-container">
+                            <div className="main-content restaurant-content">
+                                <h1> Which restaurant did you mean? </h1>
+                                <div className="restaurant-results">
+                                    {this.state.restaurantResults.map((result, index) => (
+                                        <RestaurantResult key={index} result={result} handleRestaurantChoice={this.handleRestaurantChoice}/>
+                                    ))}
+                                </div>
+                                <Button bsSize="large" className="main-button" onClick={() => {this.handleVote()}}> Vote! </Button>
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            }
+        }
         if (this.state.page === 'userProfile') {
             return (
                 <div className="container-fluid">
                     <NavBar navLink={this.state.navLink} navMessage={this.state.navMessage}/>
                     <div className="main-container">
                         <div className="main-content">
-                            <h1 className="vote-confirm"> You voted that {this.state.restaurant.label} has the best {this.state.foodType.label.toLowerCase()} in {this.state.location.label}! </h1>
+                            <h1 className="vote-confirm"> You voted that {this.state.restaurant.name} has the best {this.state.foodType.label.toLowerCase()} in {this.state.location.label}! </h1>
+                            <Button bsSize="large" className="main-button" onClick={() => {this.navigateToVoteSurvey()}}> Vote For More </Button>
                         </div>
                     </div>
                 </div>

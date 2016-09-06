@@ -17,8 +17,30 @@ class AboutPage extends React.Component {
                 <NavBar navLink={this.state.navLink} navMessage={this.state.navMessage}/>
                 <div className="main-container">
                     <div className="about-content">
-                        <h1> About the Team </h1>
-                        <h3> Coming soon... </h3>
+                        <div className="definition-container">
+                            <h1> o·ma·ka·se </h1>
+                            <p> /ōməˈkäsā, ōˈmäkəsā/ </p>
+                            <p><i> noun </i></p>
+                            <p className="definition"> respectfully leaving another to decide what is best </p>
+                        </div>
+                        <div className="creators">
+                            <div className="creator">
+                                <img className="creator-image" src="../images/daria.png"/>
+                                <p> Daria Burinskaya </p>
+                            </div>
+                            <div className="creator">
+                                <img className="creator-image" src="../images/jonathan.png"/>
+                                <p> Jonathan Mitchell </p>
+                            </div>
+                            <div className="creator">
+                                <img className="creator-image" src="../images/carling.jpg"/>
+                                <p> Carling Sugarman </p>
+                            </div>
+                            <div className="creator">
+                                <img className="creator-image" src="../images/michael.png"/>
+                                <p> Michael Tran </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

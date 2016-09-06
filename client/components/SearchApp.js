@@ -47,6 +47,7 @@ class SearchApp extends React.Component {
     }
 
     handleFoodSearch() {
+        this.setState({page: 'spinner'});
         if (this.state.foodType) {
             var data = {
                 "dish_name": this.state.foodType.label,
@@ -55,11 +56,11 @@ class SearchApp extends React.Component {
 
             axios.post('/api/search/restaurant', data)
             .then((response) => {
-                this.setState({result: response.data.restaurant_name});
+                this.setState({result: response.data});
                 this.setState({page: 'foodResult'});
             })
             .catch((error) => {
-                console.log(error);
+                this.setState({page: 'error'})
             });
 
         } else {
@@ -116,6 +117,18 @@ class SearchApp extends React.Component {
                 </div>
             );
         }
+        if (this.state.page === 'spinner') {
+            return (
+                <div className="container-fluid">
+                    <NavBar navLink={this.state.navLink} navMessage={this.state.navMessage}/>
+                    <div className="main-container">
+                        <div className="main-content">
+                            <img className="spinner" src="../spinner.gif"/>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
         if (this.state.page === 'foodResult') {
             return (
                 <div className="container-fluid food-search">
@@ -128,6 +141,19 @@ class SearchApp extends React.Component {
                                 foodType={this.state.foodType}
                                 result={this.state.result}
                             />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        if (this.state.page === 'error') {
+            return (
+                <div className="container-fluid">
+                    <NavBar navLink={this.state.navLink} navMessage={this.state.navMessage}/>
+                    <div className="main-container">
+                        <div className="main-content">
+                            <h1> Something went wrong... </h1>
+                            <Button className="main-button" onClick={() => {this.navigateToLocationSearch()}}> Try Again </Button>
                         </div>
                     </div>
                 </div>

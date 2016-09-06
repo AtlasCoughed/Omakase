@@ -5,12 +5,5 @@ exports.searchGooglePlacesModel = {
 }
 
 function getRestaurantList(req, res) {
-	searchGooglePlacesModel.getRestaurantList(req.body)
-	.then(function(result) {
-		res.status(200).send(result)
-	})
-	.catch(function(err) {
-		res.status(500).end('Error in getRestaurantList', err)
-	})
+	searchGooglePlacesModel.getRestaurantList(req.body, res);
 }
-
