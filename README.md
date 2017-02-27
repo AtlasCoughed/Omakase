@@ -1,6 +1,8 @@
 # Omakase
 Welcome to Omakase, an application that curates food selection for you.
 
+![image](https://cloud.githubusercontent.com/assets/11032490/23373248/f1f85d18-fcd3-11e6-9942-6bca612ffb02.png)
+
 You can uncomment EnsureSchema() in the server/server.js file to create the database.
 
 Backend: In the db.js file we create our schema for our mysql database. We have the following functions in place. ensureSchema() and deleteEverything().
